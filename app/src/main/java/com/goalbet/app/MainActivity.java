@@ -304,12 +304,14 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams statusLp = lp(-1, -2);
                 statusLp.setMargins(0, dp(4), 0, 0);
                 tile.addView(status, statusLp);
-                tile.setOnClickListener(v -> new AlertDialog.Builder(this)
-                    .setTitle(gameName)
-                    .setMessage(arabic
-                        ? "أُضيفت اللعبة إلى فهرس MAXBET. تشغيلها يحتاج اتفاقًا وربطًا تقنيًا مع مزوّد ألعاب مرخّص؛ هذه البطاقة ليست لعبة فعلية."
-                        : "This title is in the MAXBET catalogue. Actual gameplay requires a licensed game provider integration. This card is not a playable game.")
-                    .setPositiveButton(arabic ? "حسنًا" : "OK", null).show());
+                tile.setOnClickListener(v -> {
+                    String lower = gameName.toLowerCase(java.util.Locale.ROOT);
+                    String selected = (lower.contains("mine") || lower.contains("gems & mines")) ? "Mines" :
+                        (lower.equals("dice") || lower.contains("five dice") || lower.contains("yahtzee")) ? "Dice" : "Crash";
+                    android.content.Intent intent = new android.content.Intent(this, ArcadeGameActivity.class);
+                    intent.putExtra("game", selected);
+                    startActivity(intent);
+                });
                 LinearLayout.LayoutParams tileLp = new LinearLayout.LayoutParams(0, dp(108), 1);
                 if (count % 2 == 0) tileLp.setMargins(0, 0, dp(7), 0);
                 else tileLp.setMargins(dp(7), 0, 0, 0);
