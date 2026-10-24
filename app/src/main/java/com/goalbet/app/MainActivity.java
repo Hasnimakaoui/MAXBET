@@ -301,7 +301,11 @@ public class MainActivity extends Activity {
                 nameLp.setMargins(0, dp(5), 0, 0);
                 tile.addView(name, nameLp);
                 String lower = game.toLowerCase(java.util.Locale.ROOT);
-                boolean playable = lower.equals("crash") || lower.equals("dice") || lower.equals("mines");
+                boolean playable = lower.equals("crash") || lower.equals("dice") || lower.equals("mines")
+                    || lower.contains("slot") || lower.contains("spin") || lower.contains("jackpot")
+                    || lower.contains("lucky") || lower.contains("fortune") || lower.contains("respin")
+                    || lower.contains("swirly") || lower.contains("wheel") || lower.contains("lotto")
+                    || lower.contains("penalt") || lower.equals("goal!") || lower.contains("football cup");
                 TextView status = text(playable
                     ? (arabic ? "قابلة للعب • تجريبي" : "PLAYABLE • DEMO")
                     : (arabic ? "قيد التطوير" : "IN DEVELOPMENT"), 9, playable ? green : muted, true);
@@ -311,15 +315,17 @@ public class MainActivity extends Activity {
                 tile.setOnClickListener(v -> {
                     String chosen = gameName.toLowerCase(java.util.Locale.ROOT);
                     String selected = null;
-                    if (chosen.equals("crash")) selected = "Crash";
-                    else if (chosen.equals("dice")) selected = "Dice";
-                    else if (chosen.equals("mines")) selected = "Mines";
+                    if (chosen.equals("crash") || chosen.equals("dice") || chosen.equals("mines")
+                        || chosen.contains("slot") || chosen.contains("spin") || chosen.contains("jackpot")
+                        || chosen.contains("lucky") || chosen.contains("fortune") || chosen.contains("respin")
+                        || chosen.contains("swirly") || chosen.contains("wheel") || chosen.contains("lotto")
+                        || chosen.contains("penalt") || chosen.equals("goal!") || chosen.contains("football cup")) selected = gameName;
                     if (selected == null) {
                         new AlertDialog.Builder(this)
                             .setTitle(gameName)
                             .setMessage(arabic
-                                ? "هذه اللعبة غير مطوّرة بعد. لن نفتح لعبة الطائرة بدلًا منها. الألعاب المتاحة حاليًا للتجربة هي Crash وDice وMines."
-                                : "This game has not been implemented yet. We will not open the plane game as a substitute. Currently playable demos are Crash, Dice, and Mines.")
+                                ? "هذه اللعبة غير مطوّرة بعد. لن نفتح لعبة الطائرة بدلًا منها. الألعاب المتاحة حاليًا للتجربة تشمل Crash وDice وMines وSlots وWheel وPenalties."
+                                : "This game has not been implemented yet. We will not open the plane game as a substitute. Currently playable demos include Crash, Dice, Mines, Slots, Wheel, and Penalties.")
                             .setPositiveButton(arabic ? "حسنًا" : "OK", null)
                             .show();
                         return;
