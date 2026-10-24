@@ -437,10 +437,22 @@ public class MainActivity extends Activity {
         logo.addView(brand);
         logo.addView(brandAccent);
         top.addView(logo, new LinearLayout.LayoutParams(0, -2, 1));
-        TextView profile = text("●", 19, green, true);
-        profile.setGravity(Gravity.CENTER);
-        profile.setBackground(outline(surface2, Color.rgb(45, 65, 54), 50));
-        top.addView(profile, lp(42, 42));
+        LinearLayout accountActions = row();
+        TextView login = text(arabic ? "↪ دخول" : "↪ Login", 11, white, true);
+        login.setGravity(Gravity.CENTER);
+        pad(login, 9, 10, 9, 10);
+        login.setBackground(outline(surface2, green, 12));
+        LinearLayout.LayoutParams loginLp = lp(-2, 40);
+        loginLp.setMargins(0, 0, dp(6), 0);
+        accountActions.addView(login, loginLp);
+        TextView create = text(arabic ? "✚ حساب" : "✚ Sign up", 11, bg, true);
+        create.setGravity(Gravity.CENTER);
+        pad(create, 9, 10, 9, 10);
+        create.setBackground(shape(green, 12));
+        accountActions.addView(create, lp(-2, 40));
+        login.setOnClickListener(v -> Toast.makeText(this, arabic ? "تسجيل الدخول يحتاج ربط خدمة الحسابات" : "Account service is not connected yet", Toast.LENGTH_SHORT).show());
+        create.setOnClickListener(v -> Toast.makeText(this, arabic ? "إنشاء الحساب يحتاج ربط خدمة الحسابات" : "Account service is not connected yet", Toast.LENGTH_SHORT).show());
+        top.addView(accountActions, lp(-2, 42));
         page.addView(top);
 
         ScrollView scroll = new ScrollView(this);
