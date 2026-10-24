@@ -63,7 +63,7 @@ public class NeonArenaView extends View {
         p.setAlpha(255); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(90);
         c.drawRoundRect(new RectF(d(1),d(1),w-d(1),h-d(1)),d(22),d(22),p); p.setAlpha(255);
 
-        float progress=(float)Math.min(1,Math.max(.10,(multiplier-1)/5.2));
+        // Match aircraft travel to the exponential multiplier: it accelerates visibly as the value rises.\n        float progress=(float)Math.min(1,Math.max(0,Math.log(Math.max(1.0,multiplier))/Math.log(6.2)));
         float endX=pad+progress*(right-pad);
         float endY=bottom-(float)Math.pow(progress,1.65)*(bottom-top)*Math.min(1.15f,.25f+progress*1.1f);
         Path curve=new Path(); curve.moveTo(pad,bottom);
