@@ -29,7 +29,13 @@ public class ArcadeGameActivity extends Activity {
     root.addView(label(game.toUpperCase(Locale.ROOT),27,white,true),lp(-1,58));
     TextView info=label("PLAYABLE DEMO  •  NO REAL MONEY",11,muted,true);root.addView(info,lp(-1,28));
     balance=label("",14,green,true);LinearLayout.LayoutParams bp=lp(-1,48);bp.topMargin=dp(10);root.addView(balance,bp);save();
-    if(game.toLowerCase(Locale.ROOT).contains("mine")) buildMines(); else if(game.toLowerCase(Locale.ROOT).contains("dice")) buildDice(); else buildCrash();
+    String mode=game.toLowerCase(Locale.ROOT);
+    if(mode.contains("mine")) buildMines();
+    else if(mode.contains("dice") || mode.contains("yahtzee")) buildDice();
+    else if(mode.contains("slot") || mode.contains("spin") || mode.contains("jackpot") || mode.contains("lucky") || mode.contains("fortune") || mode.contains("respin") || mode.contains("swirly")) buildSlots();
+    else if(mode.contains("wheel") || mode.contains("lotto") || mode.contains("money wheel")) buildWheel();
+    else if(mode.contains("penalt") || mode.equals("goal!") || mode.contains("football cup")) buildPenalties();
+    else buildCrash();
     setContentView(root);
   }
   void buildCrash(){
@@ -59,6 +65,28 @@ public class ArcadeGameActivity extends Activity {
     LinearLayout.LayoutParams gp=lp(-1,-2);gp.topMargin=dp(10);root.addView(grid,gp);
     TextView cash=button("CASH OUT");LinearLayout.LayoutParams cp=lp(-1,52);cp.topMargin=dp(10);root.addView(cash,cp);cash.setOnClickListener(v->{if(ended[0]||safe[0]==0||bet[0]<=0){toast("Find a gem first");return;}long win=(long)(bet[0]*(1+safe[0]*0.18));credits+=win;save();ended[0]=true;result.setText("CASHED OUT • +"+(win-bet[0])+" credits");result.setTextColor(green);});
   }
-  void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
+
+  void buildSlots(){
+    TextView display=label("🍒   ★   7",34,green,true);display.setBackground(shape(panel,dp(18)));LinearLayout.LayoutParams dp0=lp(-1,170);dp0.topMargin=dp(12);root.addView(display,dp0);
+    TextView result=label("SLOT MACHINE • DEMO",14,white,true);root.addView(result,lp(-1,48));
+    stakeInput=new EditText(this);stakeInput.setSingleLine(true);stakeInput.setInputType(2);stakeInput.setText("100");stakeInput.setTextColor(white);stakeInput.setBackground(shape(panel,dp(12)));root.addView(stakeInput,lp(-1,50));
+    TextView spin=button("SPIN REELS");LinearLayout.LayoutParams sp=lp(-1,54);sp.topMargin=dp(12);root.addView(spin,sp);
+    String[] symbols={"🍒","🍋","🔔","💎","7️⃣","⭐"};
+    spin.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;String x=symbols[random.nextInt(symbols.length)],y=symbols[random.nextInt(symbols.length)],z=symbols[random.nextInt(symbols.length)];display.setText(x+"   "+y+"   "+z);long win=0;if(x.equals(y)&&y.equals(z))win=s*8;else if(x.equals(y)||y.equals(z)||x.equals(z))win=s*2;if(win>0)credits+=win;save();result.setText(win>0?"WIN • +"+(win-s)+" DEMO CREDITS":"NO WIN • TRY AGAIN");result.setTextColor(win>0?green:red);});
+  }
+  void buildWheel(){
+    TextView wheel=label("◉",88,green,true);wheel.setBackground(shape(panel,dp(100)));LinearLayout.LayoutParams wp=lp(-1,190);wp.setMargins(dp(24),dp(14),dp(24),dp(14));root.addView(wheel,wp);
+    TextView result=label("Spin the prize wheel",14,white,true);root.addView(result,lp(-1,48));
+    stakeInput=new EditText(this);stakeInput.setSingleLine(true);stakeInput.setInputType(2);stakeInput.setText("100");stakeInput.setTextColor(white);stakeInput.setBackground(shape(panel,dp(12)));root.addView(stakeInput,lp(-1,50));
+    TextView spin=button("SPIN WHEEL");root.addView(spin,lp(-1,54));
+    spin.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;int[] mult={0,0,1,2,3,5,10};int m=mult[random.nextInt(mult.length)];long win=s*m;credits+=win;save();wheel.animate().rotationBy(720+random.nextInt(720)).setDuration(900).start();result.setText(m==0?"NO PRIZE":("×"+m+"  •  "+(win-s>=0?"+":"")+(win-s)+" DEMO CREDITS"));result.setTextColor(m>0?green:red);});
+  }
+  void buildPenalties(){
+    TextView goal=label("🥅",64,green,true);goal.setBackground(shape(panel,dp(18)));LinearLayout.LayoutParams gl=lp(-1,150);gl.topMargin=dp(12);root.addView(goal,gl);
+    TextView result=label("Choose a corner to shoot",14,white,true);root.addView(result,lp(-1,48));
+    stakeInput=new EditText(this);stakeInput.setSingleLine(true);stakeInput.setInputType(2);stakeInput.setText("100");stakeInput.setTextColor(white);stakeInput.setBackground(shape(panel,dp(12)));root.addView(stakeInput,lp(-1,50));
+    LinearLayout shots=new LinearLayout(this);String[] corners={"↖ LEFT","↑ CENTER","RIGHT ↗"};for(int i=0;i<3;i++){final int choice=i;TextView b=button(corners[i]);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,dp(54),1);q.setMargins(dp(3),dp(8),dp(3),0);shots.addView(b,q);b.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;int keeper=random.nextInt(3);boolean scored=keeper!=choice;if(scored)credits+=s*2;save();result.setText(scored?"GOAL! +"+s+" DEMO CREDITS":"SAVED! BET LOST");result.setTextColor(scored?green:red);goal.setText(scored?"⚽  GOAL!":"🧤  SAVED");});}root.addView(shots,lp(-1,66));
+  }
+\n  void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
   @Override protected void onDestroy(){handler.removeCallbacks(tick);super.onDestroy();}
 }
