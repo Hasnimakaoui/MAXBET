@@ -2,6 +2,7 @@ package com.goalbet.app;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.view.*;
