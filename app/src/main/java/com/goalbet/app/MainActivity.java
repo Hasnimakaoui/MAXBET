@@ -11,6 +11,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.app.AlertDialog;
 
 public class MainActivity extends Activity {
     private final int bg = Color.rgb(7, 12, 11);
@@ -19,6 +21,8 @@ public class MainActivity extends Activity {
     private final int green = Color.rgb(0, 239, 129);
     private final int white = Color.rgb(245, 249, 247);
     private final int muted = Color.rgb(145, 163, 154);
+    private TextView selectedSportChip;
+    private View matchesAnchor;
 
     private GradientDrawable shape(int color, int radius) {
         GradientDrawable d = new GradientDrawable();
@@ -74,6 +78,26 @@ public class MainActivity extends Activity {
         t.setGravity(Gravity.CENTER);
         pad(t, 16, 10, 16, 10);
         t.setBackground(shape(active ? green : surface2, 50));
+        t.setTag(active ? "selected" : "normal");
+        t.setOnClickListener(v -> {
+            if (selectedSportChip != null) {
+                selectedSportChip.setTextColor(muted);
+                selectedSportChip.setBackground(shape(surface2, 50));
+                selectedSportChip.setTag("normal");
+            }
+            selectedSportChip = (TextView) v;
+            selectedSportChip.setTextColor(bg);
+            selectedSportChip.setBackground(shape(green, 50));
+            selectedSportChip.setTag("selected");
+            String sport = value.replaceAll("[^A-Za-z ]", "").trim();
+            if (sport.equalsIgnoreCase("Football")) {
+                if (matchesAnchor != null) matchesAnchor.setVisibility(View.VISIBLE);
+                Toast.makeText(this, "Football matches selected", Toast.LENGTH_SHORT).show();
+            } else {
+                if (matchesAnchor != null) matchesAnchor.setVisibility(View.GONE);
+                Toast.makeText(this, sport + " matches will appear when sports data is connected", Toast.LENGTH_LONG).show();
+            }
+        });
         LinearLayout.LayoutParams p = lp(-2, 38);
         p.setMargins(0, 0, dp(8), 0);
         t.setLayoutParams(p);
@@ -219,6 +243,7 @@ public class MainActivity extends Activity {
         content.addView(sportsScroll);
 
         sectionTitle(content, "Top matches", "VIEW ALL  ↗");
+        matchesAnchor = content.getChildAt(content.getChildCount() - 1);
         LinearLayout live = row();
         TextView liveDot = text("● LIVE", 10, green, true);
         live.addView(liveDot);
@@ -247,9 +272,38 @@ public class MainActivity extends Activity {
         pad(nav, 10, 10, 10, 10);
         String[] navItems = {"⌂\nHome", "▦\nMatches", "☆\nFavorites", "☻\nProfile"};
         for (int i = 0; i < navItems.length; i++) {
+            final int tab = i;
             TextView item = text(navItems[i], 11, i == 0 ? green : muted, i == 0);
             item.setGravity(Gravity.CENTER);
             item.setLineSpacing(dp(3), 1.0f);
+            item.setOnClickListener(v -> {
+                for (int j = 0; j < nav.getChildCount(); j++) {
+                    TextView other = (TextView) nav.getChildAt(j);
+                    other.setTextColor(j == tab ? green : muted);
+                    other.setTypeface(Typeface.create("sans-serif", j == tab ? Typeface.BOLD : Typeface.NORMAL));
+                }
+                if (tab == 0) {
+                    scroll.smoothScrollTo(0, 0);
+                } else if (tab == 1) {
+                    if (matchesAnchor != null) {
+                        int y = matchesAnchor.getTop();
+                        scroll.smoothScrollTo(0, Math.max(0, y - dp(12)));
+                    }
+                } else if (tab == 2) {
+                    new AlertDialog.Builder(this)
+                        .setTitle("Favorites")
+                        .setMessage("Your saved matches will appear here. Tap a match to add it to Favorites in a future update.")
+                        .setPositiveButton("OK", null).show();
+                } else {
+                    String[] settings = {"Language: English", "Theme: Dark neon", "App: MAXBET demo"};
+                    new AlertDialog.Builder(this).setTitle("Profile & Settings")
+                        .setItems(settings, (dialog, which) -> {
+                            if (which == 0) Toast.makeText(this, "More languages will be added in a future update", Toast.LENGTH_SHORT).show();
+                            else if (which == 1) Toast.makeText(this, "Dark neon theme is active", Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(this, "MAXBET sports demo", Toast.LENGTH_SHORT).show();
+                        }).setNegativeButton("Close", null).show();
+                }
+            });
             nav.addView(item, new LinearLayout.LayoutParams(0, dp(48), 1));
         }
         page.addView(nav);
