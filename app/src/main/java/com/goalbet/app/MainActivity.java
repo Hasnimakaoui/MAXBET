@@ -170,6 +170,12 @@ public class MainActivity extends Activity {
         return t;
     }
 
+    private String initials(String team) {
+        String[] parts = team.trim().split("\\s+");
+        if (parts.length == 1) return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase(java.util.Locale.ROOT);
+        return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase(java.util.Locale.ROOT);
+    }
+
     private void addMatch(LinearLayout parent, String league, String time,
                           String home, String away, String homeOdds, String drawOdds, String awayOdds) {
         LinearLayout card = column();
@@ -186,10 +192,17 @@ public class MainActivity extends Activity {
         });
 
         LinearLayout meta = row();
-        TextView leagueText = text("●  " + league, 11, green, true);
+        TextView leagueText = text("●  " + league, 10, green, true);
         meta.addView(leagueText, new LinearLayout.LayoutParams(0, -2, 1));
-        TextView timeText = text("◷  " + time, 11, muted, false);
-        meta.addView(timeText);
+        TextView demoTag = text(arabic ? "تجريبي" : "DEMO", 9, muted, true);
+        demoTag.setGravity(Gravity.CENTER);
+        pad(demoTag, 8, 5, 8, 5);
+        demoTag.setBackground(outline(surface2, Color.rgb(47, 69, 58), 20));
+        meta.addView(demoTag);
+        TextView timeText = text("◷  " + time, 11, white, true);
+        LinearLayout.LayoutParams timeLp = lp(-2, -2);
+        timeLp.setMargins(dp(8), 0, 0, 0);
+        meta.addView(timeText, timeLp);
         card.addView(meta);
 
         View divider = new View(this);
@@ -200,17 +213,47 @@ public class MainActivity extends Activity {
 
         LinearLayout teams = row();
         LinearLayout names = column();
-        names.addView(text(home, 15, white, true));
-        TextView awayText = text(away, 15, white, true);
-        awayText.setPadding(0, dp(10), 0, 0);
-        names.addView(awayText);
+        LinearLayout homeRow = row();
+        TextView homeBadge = text(initials(home), 11, green, true);
+        homeBadge.setGravity(Gravity.CENTER);
+        homeBadge.setBackground(outline(surface2, Color.rgb(0, 130, 75), 10));
+        homeRow.addView(homeBadge, lp(34, 34));
+        TextView homeName = text(home, 14, white, true);
+        LinearLayout.LayoutParams hn = lp(-1, 36);
+        hn.setMargins(dp(9), 0, 0, 0);
+        homeRow.addView(homeName, hn);
+        names.addView(homeRow);
+        LinearLayout awayRow = row();
+        TextView awayBadge = text(initials(away), 11, green, true);
+        awayBadge.setGravity(Gravity.CENTER);
+        awayBadge.setBackground(outline(surface2, Color.rgb(0, 130, 75), 10));
+        awayRow.addView(awayBadge, lp(34, 34));
+        TextView awayText = text(away, 14, white, true);
+        LinearLayout.LayoutParams an = lp(-1, 36);
+        an.setMargins(dp(9), dp(7), 0, 0);
+        awayRow.addView(awayText, an);
+        awayRow.setPadding(0, dp(7), 0, 0);
+        names.addView(awayRow);
         teams.addView(names, new LinearLayout.LayoutParams(0, -2, 1));
-        LinearLayout score = column();
-        score.setGravity(Gravity.CENTER);
+        LinearLayout side = column();
+        side.setGravity(Gravity.CENTER);
         TextView vs = text("VS", 12, muted, true);
         vs.setGravity(Gravity.CENTER);
-        score.addView(vs);
-        teams.addView(score, lp(42, -2));
+        side.addView(vs);
+        TextView star = text(favorites.contains(favoriteKey) ? "★" : "☆", 24,
+                favorites.contains(favoriteKey) ? green : muted, true);
+        star.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams starLp = lp(42, 38);
+        starLp.setMargins(0, dp(8), 0, 0);
+        side.addView(star, starLp);
+        star.setOnClickListener(v -> {
+            if (favorites.contains(favoriteKey)) favorites.remove(favoriteKey); else favorites.add(favoriteKey);
+            prefs.edit().putStringSet("favorites", new java.util.HashSet<>(favorites)).apply();
+            star.setText(favorites.contains(favoriteKey) ? "★" : "☆");
+            star.setTextColor(favorites.contains(favoriteKey) ? green : muted);
+            Toast.makeText(this, tr(favorites.contains(favoriteKey) ? "Added to favorites" : "Removed from favorites"), Toast.LENGTH_SHORT).show();
+        });
+        teams.addView(side, lp(46, -2));
         card.addView(teams);
 
         LinearLayout market = row();
