@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
             case "🏒  Hockey": return "🏒  الهوكي";
             case "Top matches": return "أهم المباريات";
             case "VIEW ALL  ↗": return "عرض الكل  ↗";
-            case "● LIVE": return "● مباشر";
+            case "● DEMO DATA": return "● بيانات تجريبية";
             case "   •   TODAY'S PICKS": return "   •   اختيارات اليوم";
             case "MAXBET  •  MATCH CENTER": return "MAXBET  •  مركز المباريات";
             case "DEMO ONLY — fictional sample odds. No real betting or payments.": return "نسخة تجريبية — احتمالات افتراضية، دون مراهنات أو مدفوعات حقيقية.";
@@ -57,7 +57,16 @@ public class MainActivity extends Activity {
             case "Your saved matches will appear here. Tap a match to add it to Favorites in a future update.": return "ستظهر المباريات المحفوظة هنا. ستتم إضافة إمكانية حفظ المباريات في تحديث لاحق.";
             case "OK": return "حسنًا";
             case "Profile & Settings": return "الملف الشخصي والإعدادات";
-            case "Language: English": return "اللغة: English / العربية";
+            case "Language: English": return "اللغة: العربية / English";
+            case "Compact layout": return "العرض المضغوط";
+            case "Notifications: unavailable": return "التنبيهات: تحتاج بيانات مباشرة";
+            case "Favorites saved: ": return "المباريات المحفوظة: ";
+            case "League standings": return "ترتيب الدوريات";
+            case "Match analysis": return "إحصائيات وتحليل المباريات";
+            case "Live notifications require a real sports data source": return "التنبيهات المباشرة تحتاج ربط مصدر بيانات رياضي حقيقي.";
+            case "Close": return "إغلاق";
+            case "League tables are unavailable until a verified sports data provider is connected. No standings are fabricated.": return "ترتيب الدوريات غير متاح حتى ربط مصدر رياضي موثوق. لن نعرض ترتيبًا مختلقًا.";
+            case "Real statistics and analysis require verified match data. The current match cards are demo examples, not live fixtures.": return "الإحصائيات والتحليل يحتاجان بيانات مباريات موثوقة. البطاقات الحالية أمثلة تجريبية وليست مباريات مباشرة.";
             case "Compact layout": return "العرض المضغوط";
             case "Notifications: unavailable": return "التنبيهات: تنتظر ربط البيانات";
             case "Favorites saved: ": return "المباريات المحفوظة: ";
@@ -165,7 +174,7 @@ public class MainActivity extends Activity {
     private void addMatch(LinearLayout parent, String league, String time,
                           String home, String away, String homeOdds, String drawOdds, String awayOdds) {
         LinearLayout card = column();
-        pad(card, 15, 14, 15, 15);
+        pad(card, 15, compactMode ? 9 : 14, 15, compactMode ? 10 : 15);
         card.setBackground(outline(surface, Color.rgb(34, 49, 42), 18));
         LinearLayout.LayoutParams cp = lp(-1, -2);
         cp.setMargins(0, 0, 0, dp(12));
@@ -243,6 +252,10 @@ public class MainActivity extends Activity {
         arabic = prefs.getBoolean("arabic", true);
         compactMode = prefs.getBoolean("compact", false);
         favorites.addAll(prefs.getStringSet("favorites", new java.util.HashSet<>()));
+        prefs = getSharedPreferences("maxbet_settings", MODE_PRIVATE);
+        arabic = prefs.getBoolean("arabic", true);
+        compactMode = prefs.getBoolean("compact", false);
+        favorites.addAll(prefs.getStringSet("favorites", new java.util.HashSet<>()));
         getWindow().setStatusBarColor(bg);
         getWindow().setNavigationBarColor(bg);
         getWindow().getDecorView().setSystemUiVisibility(0);
@@ -308,7 +321,7 @@ public class MainActivity extends Activity {
         sectionTitle(content, "Top matches", "VIEW ALL  ↗");
         matchesAnchor = content.getChildAt(content.getChildCount() - 1);
         LinearLayout live = row();
-        TextView liveDot = text("● LIVE", 10, green, true);
+        TextView liveDot = text("● DEMO DATA", 10, green, true);
         live.addView(liveDot);
         TextView today = text("   •   TODAY'S PICKS", 10, muted, true);
         live.addView(today);
