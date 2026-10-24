@@ -35,6 +35,10 @@ public class NeonArenaView extends View {
     }
     private float d(float v) { return v*density; }
 
+    private float curveY(float t,float bottom,float top) {
+        return bottom-(float)Math.pow(t,1.65)*(bottom-top)*Math.min(1.15f,.25f+t*1.1f);
+    }
+
     @Override protected void onDraw(Canvas c) {
         super.onDraw(c);
         float w=getWidth(), h=getHeight();
@@ -63,19 +67,35 @@ public class NeonArenaView extends View {
         p.setAlpha(255); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(90);
         c.drawRoundRect(new RectF(d(1),d(1),w-d(1),h-d(1)),d(22),d(22),p); p.setAlpha(255);
 
-        // Match aircraft travel to the exponential multiplier: it accelerates visibly as the value rises.\n        float progress=(float)Math.min(1,Math.max(0,Math.log(Math.max(1.0,multiplier))/Math.log(6.2)));
+        // Logarithmic multiplier scale keeps aircraft, curve and labels synchronized.
+        float progress=(float)Math.min(1,Math.max(0,Math.log(Math.max(1.0,multiplier))/Math.log(6.2)));
         float endX=pad+progress*(right-pad);
-        float endY=bottom-(float)Math.pow(progress,1.65)*(bottom-top)*Math.min(1.15f,.25f+progress*1.1f);
+        float endY=curveY(progress,bottom,top);
         Path curve=new Path(); curve.moveTo(pad,bottom);
-        for(int i=1;i<=48;i++){
-            float t=i/48f*progress, x=pad+t*(right-pad);
-            float y=bottom-(float)Math.pow(t,1.65)*(bottom-top)*Math.min(1.15f,.25f+progress*1.1f);
-            curve.lineTo(x,y);
+        for(int i=1;i<=64;i++){
+            float t=i/64f*progress, x=pad+t*(right-pad);
+            curve.lineTo(x,curveY(t,bottom,top));
         }
         Path area=new Path(curve); area.lineTo(endX,bottom); area.lineTo(pad,bottom); area.close();
         p.setStyle(Paint.Style.FILL);
         p.setShader(new LinearGradient(0,top,0,bottom,new int[]{crashed?0x44ff234c:0x4400ff98,0x0000ff98},null,Shader.TileMode.CLAMP));
         c.drawPath(area,p); p.setShader(null);
+        // Numeric checkpoints on the curve: only show values reached in this round.
+        double[] checkpoints={1.25,1.5,2.0,3.0,4.0,5.0,6.0};
+        p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",1));
+        p.setTextSize(d(9));
+        for(double mark:checkpoints){
+            float t=(float)(Math.log(mark)/Math.log(6.2));
+            if(t>progress || t<0.015f) continue;
+            float mx=pad+t*(right-pad), my=curveY(t,bottom,top);
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(175);
+            c.drawCircle(mx,my,d(2.2f),p);
+            p.setStyle(Paint.Style.FILL); p.setColor(Color.rgb(220,255,239)); p.setAlpha(230);
+            float labelY=my-d(9);
+            if(labelY<top+d(10)) labelY=my+d(15);
+            c.drawText(String.format(java.util.Locale.US,"%.2f×",mark),mx,labelY,p);
+            p.setAlpha(255);
+        }
         p.setStyle(Paint.Style.STROKE); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
         p.setColor(neon); p.setStrokeWidth(d(14)); p.setAlpha(24); p.setShadowLayer(d(20),0,0,neon); c.drawPath(curve,p); p.clearShadowLayer();
         p.setAlpha(75); p.setStrokeWidth(d(6)); c.drawPath(curve,p);
