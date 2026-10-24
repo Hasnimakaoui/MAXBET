@@ -61,44 +61,55 @@ public class NeonArenaView extends View {
             p.setColor(Color.argb((int)(starA[i]*(.55f+.45f*pulse)),120,255,196));
             c.drawCircle(sx,sy,d(starR[i]),p);
         }
-        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(.8f)); p.setColor(Color.rgb(17,83,59)); p.setAlpha(115);
-        for(int i=0;i<9;i++) { float gx=pad+i*(right-pad)/8; c.drawLine(gx,top,gx,bottom,p); }
-        for(int i=0;i<5;i++) { float gy=top+i*(bottom-top)/4; c.drawLine(pad,gy,right,gy,p); }
-        p.setAlpha(255); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(90);
+        // Premium chart grid and readable multiplier scale.
+        float chartLeft=pad+d(5), chartRight=right-d(5), chartTop=top+d(7), chartBottom=bottom-d(13);
+        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(.7f)); p.setColor(Color.rgb(42,86,68)); p.setAlpha(125);
+        for(int i=0;i<=4;i++){
+            float gy=chartTop+i*(chartBottom-chartTop)/4f;
+            p.setPathEffect((i==4)?null:new android.graphics.DashPathEffect(new float[]{d(3),d(5)},0));
+            c.drawLine(chartLeft,gy,chartRight,gy,p);
+        }
+        p.setPathEffect(null);
+        for(int i=0;i<=6;i++){
+            float gx=chartLeft+i*(chartRight-chartLeft)/6f;
+            p.setAlpha(i==0?150:65); c.drawLine(gx,chartTop,gx,chartBottom,p);
+        }
+        p.setAlpha(255); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(85);
         c.drawRoundRect(new RectF(d(1),d(1),w-d(1),h-d(1)),d(22),d(22),p); p.setAlpha(255);
 
-        // Logarithmic multiplier scale keeps aircraft, curve and labels synchronized.
+        // A single logarithmic scale drives the curve, aircraft and tick positions.
         float progress=(float)Math.min(1,Math.max(0,Math.log(Math.max(1.0,multiplier))/Math.log(6.2)));
-        float endX=pad+progress*(right-pad);
-        float endY=curveY(progress,bottom,top);
-        Path curve=new Path(); curve.moveTo(pad,bottom);
-        for(int i=1;i<=64;i++){
-            float t=i/64f*progress, x=pad+t*(right-pad);
-            curve.lineTo(x,curveY(t,bottom,top));
+        float endX=chartLeft+progress*(chartRight-chartLeft);
+        float endY=curveY(progress,chartBottom,chartTop);
+        Path curve=new Path(); curve.moveTo(chartLeft,chartBottom);
+        for(int i=1;i<=96;i++){
+            float t=i/96f*progress;
+            float x=chartLeft+t*(chartRight-chartLeft);
+            curve.lineTo(x,curveY(t,chartBottom,chartTop));
         }
-        Path area=new Path(curve); area.lineTo(endX,bottom); area.lineTo(pad,bottom); area.close();
+        Path area=new Path(curve); area.lineTo(endX,chartBottom); area.lineTo(chartLeft,chartBottom); area.close();
         p.setStyle(Paint.Style.FILL);
-        p.setShader(new LinearGradient(0,top,0,bottom,new int[]{crashed?0x44ff234c:0x4400ff98,0x0000ff98},null,Shader.TileMode.CLAMP));
+        p.setShader(new LinearGradient(0,chartTop,0,chartBottom,new int[]{crashed?0x66ff234c:0x6600ff98,0x0000ff98},null,Shader.TileMode.CLAMP));
         c.drawPath(area,p); p.setShader(null);
-        // Numeric checkpoints on the curve: only show values reached in this round.
-        double[] checkpoints={1.25,1.5,2.0,3.0,4.0,5.0,6.0};
+
+        // Clean axis labels replace crowded numbers sitting directly on the curve.
+        double[] marks={1.0,1.5,2.0,3.0,4.5,6.0};
         p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",1));
-        p.setTextSize(d(9));
-        for(double mark:checkpoints){
+        p.setTextSize(d(9)); p.setTextAlign(Paint.Align.CENTER);
+        for(double mark:marks){
             float t=(float)(Math.log(mark)/Math.log(6.2));
-            if(t>progress || t<0.015f) continue;
-            float mx=pad+t*(right-pad), my=curveY(t,bottom,top);
-            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha(175);
-            c.drawCircle(mx,my,d(2.2f),p);
-            p.setStyle(Paint.Style.FILL); p.setColor(Color.rgb(220,255,239)); p.setAlpha(230);
-            float labelY=my-d(9);
-            if(labelY<top+d(10)) labelY=my+d(15);
-            c.drawText(String.format(java.util.Locale.US,"%.2f×",mark),mx,labelY,p);
-            p.setAlpha(255);
+            float mx=chartLeft+t*(chartRight-chartLeft);
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(1)); p.setColor(neon); p.setAlpha((t<=progress)?210:65);
+            c.drawLine(mx,chartBottom-d(3),mx,chartBottom+d(2),p);
+            p.setStyle(Paint.Style.FILL); p.setColor((t<=progress)?Color.rgb(230,255,242):Color.rgb(104,132,118)); p.setAlpha(255);
+            String tick=String.format(java.util.Locale.US,"%.1f×",mark);
+            if(mark==2.0 || mark==3.0 || mark==6.0) tick=String.format(java.util.Locale.US,"%.0f×",mark);
+            c.drawText(tick,mx,h-d(18),p);
         }
+        p.setTextAlign(Paint.Align.LEFT);
         p.setStyle(Paint.Style.STROKE); p.setStrokeCap(Paint.Cap.ROUND); p.setStrokeJoin(Paint.Join.ROUND);
-        p.setColor(neon); p.setStrokeWidth(d(14)); p.setAlpha(24); p.setShadowLayer(d(20),0,0,neon); c.drawPath(curve,p); p.clearShadowLayer();
-        p.setAlpha(75); p.setStrokeWidth(d(6)); c.drawPath(curve,p);
+        p.setColor(neon); p.setStrokeWidth(d(15)); p.setAlpha(22); p.setShadowLayer(d(18),0,0,neon); c.drawPath(curve,p); p.clearShadowLayer();
+        p.setAlpha(70); p.setStrokeWidth(d(6)); c.drawPath(curve,p);
         p.setAlpha(255); p.setStrokeWidth(d(2.8f)); c.drawPath(curve,p);
 
         p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(1.5f)); p.setColor(neon); p.setAlpha(150);
