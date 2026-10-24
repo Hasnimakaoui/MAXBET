@@ -87,6 +87,7 @@ public class ArcadeGameActivity extends Activity {
     stakeInput=new EditText(this);stakeInput.setSingleLine(true);stakeInput.setInputType(2);stakeInput.setText("100");stakeInput.setTextColor(white);stakeInput.setBackground(shape(panel,dp(12)));root.addView(stakeInput,lp(-1,50));
     LinearLayout shots=new LinearLayout(this);String[] corners={"↖ LEFT","↑ CENTER","RIGHT ↗"};for(int i=0;i<3;i++){final int choice=i;TextView b=button(corners[i]);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,dp(54),1);q.setMargins(dp(3),dp(8),dp(3),0);shots.addView(b,q);b.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;int keeper=random.nextInt(3);boolean scored=keeper!=choice;if(scored)credits+=s*2;save();result.setText(scored?"GOAL! +"+s+" DEMO CREDITS":"SAVED! BET LOST");result.setTextColor(scored?green:red);goal.setText(scored?"⚽  GOAL!":"🧤  SAVED");});}root.addView(shots,lp(-1,66));
   }
-\n  void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
+
+  void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
   @Override protected void onDestroy(){handler.removeCallbacks(tick);super.onDestroy();}
 }
