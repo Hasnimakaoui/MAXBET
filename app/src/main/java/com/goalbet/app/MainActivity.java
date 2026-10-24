@@ -23,6 +23,46 @@ public class MainActivity extends Activity {
     private final int muted = Color.rgb(145, 163, 154);
     private TextView selectedSportChip;
     private View matchesAnchor;
+    private boolean arabic = false;
+
+    private String tr(String value) {
+        if (!arabic) return value;
+        switch (value) {
+            case "YOUR SPORTS HUB": return "عالمك الرياضي";
+            case "THE GAME\nSTARTS HERE.": return "هنا تبدأ\nالمنافسة.";
+            case "Follow the action. Explore every match.": return "تابع الأحداث واكتشف كل مباراة.";
+            case "Explore sports": return "استكشف الرياضات";
+            case "ALL SPORTS  ↗": return "كل الرياضات  ↗";
+            case "⚽  Football": return "⚽  كرة القدم";
+            case "🏀  Basketball": return "🏀  كرة السلة";
+            case "🎾  Tennis": return "🎾  التنس";
+            case "🏒  Hockey": return "🏒  الهوكي";
+            case "Top matches": return "أهم المباريات";
+            case "VIEW ALL  ↗": return "عرض الكل  ↗";
+            case "● LIVE": return "● مباشر";
+            case "   •   TODAY'S PICKS": return "   •   اختيارات اليوم";
+            case "MAXBET  •  MATCH CENTER": return "MAXBET  •  مركز المباريات";
+            case "DEMO ONLY — fictional sample odds. No real betting or payments.": return "نسخة تجريبية — احتمالات افتراضية، دون مراهنات أو مدفوعات حقيقية.";
+            case "Home": return "الرئيسية";
+            case "Matches": return "المباريات";
+            case "Favorites": return "المفضلة";
+            case "Profile": return "الملف الشخصي";
+            case "Your saved matches will appear here. Tap a match to add it to Favorites in a future update.": return "ستظهر المباريات المحفوظة هنا. ستتم إضافة إمكانية حفظ المباريات في تحديث لاحق.";
+            case "OK": return "حسنًا";
+            case "Profile & Settings": return "الملف الشخصي والإعدادات";
+            case "Language: English": return "اللغة: English / العربية";
+            case "Theme: Dark neon": return "المظهر: أسود وأخضر نيون";
+            case "App: MAXBET demo": return "التطبيق: نسخة MAXBET التجريبية";
+            case "Dark neon theme is active": return "المظهر الأسود والأخضر مفعل";
+            case "MAXBET sports demo": return "نسخة MAXBET الرياضية التجريبية";
+            case "Football matches selected": return "تم اختيار كرة القدم";
+            case " matches will appear when sports data is connected": return " ستظهر عند ربط التطبيق ببيانات رياضية";
+            default: return value;
+        }
+    }
+
+    private String navLabel(String icon, String label) { return icon + "\n" + tr(label); }
+
 
     private GradientDrawable shape(int color, int radius) {
         GradientDrawable d = new GradientDrawable();
@@ -39,7 +79,7 @@ public class MainActivity extends Activity {
 
     private TextView text(String value, int size, int color, boolean bold) {
         TextView t = new TextView(this);
-        t.setText(value);
+        t.setText(tr(value));
         t.setTextSize(size);
         t.setTextColor(color);
         t.setGravity(Gravity.CENTER_VERTICAL);
@@ -188,6 +228,7 @@ public class MainActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(0);
 
         LinearLayout page = column();
+        page.setLayoutDirection(arabic ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         page.setBackgroundColor(bg);
 
         LinearLayout top = row();
@@ -208,6 +249,7 @@ public class MainActivity extends Activity {
         scroll.setFillViewport(true);
         scroll.setClipToPadding(false);
         LinearLayout content = column();
+        content.setLayoutDirection(arabic ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         pad(content, 18, 8, 18, 24);
         scroll.addView(content);
         page.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -234,6 +276,7 @@ public class MainActivity extends Activity {
         sectionTitle(content, "Explore sports", "ALL SPORTS  ↗");
         HorizontalScrollView sportsScroll = new HorizontalScrollView(this);
         sportsScroll.setHorizontalScrollBarEnabled(false);
+        sportsScroll.setLayoutDirection(arabic ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         LinearLayout sports = row();
         sports.addView(chip("⚽  Football", true));
         sports.addView(chip("🏀  Basketball", false));
@@ -270,7 +313,7 @@ public class MainActivity extends Activity {
         LinearLayout nav = row();
         nav.setBackgroundColor(Color.rgb(11, 18, 15));
         pad(nav, 10, 10, 10, 10);
-        String[] navItems = {"⌂\nHome", "▦\nMatches", "☆\nFavorites", "☻\nProfile"};
+        String[] navItems = {navLabel("⌂", "Home"), navLabel("▦", "Matches"), navLabel("☆", "Favorites"), navLabel("☻", "Profile")};
         for (int i = 0; i < navItems.length; i++) {
             final int tab = i;
             TextView item = text(navItems[i], 11, i == 0 ? green : muted, i == 0);
@@ -291,16 +334,16 @@ public class MainActivity extends Activity {
                     }
                 } else if (tab == 2) {
                     new AlertDialog.Builder(this)
-                        .setTitle("Favorites")
-                        .setMessage("Your saved matches will appear here. Tap a match to add it to Favorites in a future update.")
-                        .setPositiveButton("OK", null).show();
+                        .setTitle(tr("Favorites"))
+                        .setMessage(tr("Your saved matches will appear here. Tap a match to add it to Favorites in a future update."))
+                        .setPositiveButton(tr("OK"), null).show();
                 } else {
-                    String[] settings = {"Language: English", "Theme: Dark neon", "App: MAXBET demo"};
-                    new AlertDialog.Builder(this).setTitle("Profile & Settings")
+                    String[] settings = {tr("Language: English"), tr("Theme: Dark neon"), tr("App: MAXBET demo")};
+                    new AlertDialog.Builder(this).setTitle(tr("Profile & Settings"))
                         .setItems(settings, (dialog, which) -> {
-                            if (which == 0) Toast.makeText(this, "More languages will be added in a future update", Toast.LENGTH_SHORT).show();
-                            else if (which == 1) Toast.makeText(this, "Dark neon theme is active", Toast.LENGTH_SHORT).show();
-                            else Toast.makeText(this, "MAXBET sports demo", Toast.LENGTH_SHORT).show();
+                            if (which == 0) { arabic = !arabic; recreate(); }
+                            else if (which == 1) Toast.makeText(this, tr("Dark neon theme is active"), Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(this, tr("MAXBET sports demo"), Toast.LENGTH_SHORT).show();
                         }).setNegativeButton("Close", null).show();
                 }
             });
