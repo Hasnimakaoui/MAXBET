@@ -13,6 +13,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 
 public class MainActivity extends Activity {
     private final int bg = Color.rgb(7, 12, 11);
@@ -24,6 +25,9 @@ public class MainActivity extends Activity {
     private TextView selectedSportChip;
     private View matchesAnchor;
     private boolean arabic = false;
+    private final java.util.Set<String> favorites = new java.util.HashSet<>();
+    private SharedPreferences prefs;
+    private boolean compactMode = false;
 
     private String tr(String value) {
         if (!arabic) return value;
@@ -43,14 +47,14 @@ public class MainActivity extends Activity {
             case "   •   TODAY'S PICKS": return "   •   اختيارات اليوم";
             case "MAXBET  •  MATCH CENTER": return "MAXBET  •  مركز المباريات";
             case "DEMO ONLY — fictional sample odds. No real betting or payments.": return "نسخة تجريبية — احتمالات افتراضية، دون مراهنات أو مدفوعات حقيقية.";
-            case "Home": return "الرئيسية";
+            case "Added to favorites": return "أضيفت إلى المفضلة";\n            case "Removed from favorites": return "حُذفت من المفضلة";\n            case "Home": return "الرئيسية";
             case "Matches": return "المباريات";
-            case "Favorites": return "المفضلة";
+            case "Favorites": return "المفضلة";\n            case "Live notifications require a real sports data source": return "تنبيهات الأهداف الحية تتطلب ربط مصدر بيانات رياضي حقيقي.";
             case "Profile": return "الملف الشخصي";
             case "Your saved matches will appear here. Tap a match to add it to Favorites in a future update.": return "ستظهر المباريات المحفوظة هنا. ستتم إضافة إمكانية حفظ المباريات في تحديث لاحق.";
             case "OK": return "حسنًا";
             case "Profile & Settings": return "الملف الشخصي والإعدادات";
-            case "Language: English": return "اللغة: English / العربية";
+            case "Language: English": return "اللغة: English / العربية";\n            case "Compact layout": return "العرض المضغوط";\n            case "Notifications: unavailable": return "التنبيهات: تنتظر ربط البيانات";\n            case "Favorites saved: ": return "المباريات المحفوظة: ";
             case "Theme: Dark neon": return "المظهر: أسود وأخضر نيون";
             case "App: MAXBET demo": return "التطبيق: نسخة MAXBET التجريبية";
             case "Dark neon theme is active": return "المظهر الأسود والأخضر مفعل";
@@ -159,7 +163,7 @@ public class MainActivity extends Activity {
         card.setBackground(outline(surface, Color.rgb(34, 49, 42), 18));
         LinearLayout.LayoutParams cp = lp(-1, -2);
         cp.setMargins(0, 0, 0, dp(12));
-        parent.addView(card, cp);
+        parent.addView(card, cp);\n        String favoriteKey = home + " vs " + away;\n        card.setOnClickListener(v -> {\n            if (favorites.contains(favoriteKey)) favorites.remove(favoriteKey); else favorites.add(favoriteKey);\n            prefs.edit().putStringSet("favorites", new java.util.HashSet<>(favorites)).apply();\n            Toast.makeText(this, tr(favorites.contains(favoriteKey) ? "Added to favorites" : "Removed from favorites"), Toast.LENGTH_SHORT).show();\n        });
 
         LinearLayout meta = row();
         TextView leagueText = text("●  " + league, 11, green, true);
@@ -223,6 +227,10 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
+        prefs = getSharedPreferences("maxbet_settings", MODE_PRIVATE);
+        arabic = prefs.getBoolean("arabic", false);
+        compactMode = prefs.getBoolean("compact", false);
+        favorites.addAll(prefs.getStringSet("favorites", new java.util.HashSet<>()));
         getWindow().setStatusBarColor(bg);
         getWindow().setNavigationBarColor(bg);
         getWindow().getDecorView().setSystemUiVisibility(0);
@@ -335,10 +343,10 @@ public class MainActivity extends Activity {
                 } else if (tab == 2) {
                     new AlertDialog.Builder(this)
                         .setTitle(tr("Favorites"))
-                        .setMessage(tr("Your saved matches will appear here. Tap a match to add it to Favorites in a future update."))
+                        .setMessage(favorites.isEmpty() ? tr("Your saved matches will appear here. Tap a match to add it to Favorites in a future update.") : String.join("\\n", favorites))
                         .setPositiveButton(tr("OK"), null).show();
                 } else {
-                    String[] settings = {tr("Language: English"), tr("Theme: Dark neon"), tr("App: MAXBET demo")};
+                    String[] settings = {tr("Language: English"), tr("Compact layout"), tr("Notifications: unavailable"), tr("Favorites saved: ") + favorites.size()};
                     new AlertDialog.Builder(this).setTitle(tr("Profile & Settings"))
                         .setItems(settings, (dialog, which) -> {
                             if (which == 0) { arabic = !arabic; recreate(); }
