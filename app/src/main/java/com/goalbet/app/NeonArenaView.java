@@ -86,12 +86,23 @@ public class NeonArenaView extends View {
         p.setStyle(Paint.Style.FILL); p.setColor(neon); p.setShadowLayer(d(17),0,0,neon);
         c.drawCircle(endX,endY,d(4.5f+1.5f*pulse),p); p.clearShadowLayer();
 
-        // Sleek rocket with animated exhaust.
-        c.save(); c.rotate(-25*progress-12,endX,endY);
-        p.setColor(Color.WHITE); p.setStyle(Paint.Style.FILL);
-        Path ship=new Path(); ship.moveTo(endX+d(12),endY); ship.lineTo(endX-d(6),endY-d(5)); ship.lineTo(endX-d(3),endY); ship.lineTo(endX-d(6),endY+d(5)); ship.close();
-        p.setShadowLayer(d(8),0,0,neon); c.drawPath(ship,p); p.clearShadowLayer();
-        p.setColor(neon); Path flame=new Path(); flame.moveTo(endX-d(5),endY); flame.lineTo(endX-d(12+3*pulse),endY-d(2)); flame.lineTo(endX-d(10),endY+d(2)); flame.close(); c.drawPath(flame,p);
+        // Detailed miniature aircraft with swept wings, cockpit, tail and twin engine trails.
+        c.save(); c.translate(endX,endY); c.rotate(-25*progress-12);
+        p.setStyle(Paint.Style.FILL); p.setColor(neon); p.setAlpha(160);
+        p.setShadowLayer(d(8),-d(15),0,neon);
+        c.drawRoundRect(new RectF(-d(24+4*pulse),-d(5),-d(7),-d(2)),d(2),d(2),p);
+        c.drawRoundRect(new RectF(-d(24+4*pulse),d(2),-d(7),d(5)),d(2),d(2),p);
+        p.clearShadowLayer(); p.setAlpha(255);
+        Path wings=new Path(); wings.moveTo(d(5),-d(2)); wings.lineTo(-d(8),-d(18)); wings.lineTo(-d(16),-d(20)); wings.lineTo(-d(12),-d(4)); wings.lineTo(-d(22),0); wings.lineTo(-d(12),d(4)); wings.lineTo(-d(16),d(20)); wings.lineTo(-d(8),d(18)); wings.lineTo(d(5),d(2)); wings.close();
+        p.setColor(Color.rgb(155,190,180)); p.setShadowLayer(d(7),0,0,neon); c.drawPath(wings,p); p.clearShadowLayer();
+        Path tail=new Path(); tail.moveTo(-d(13),-d(3)); tail.lineTo(-d(21),-d(10)); tail.lineTo(-d(23),-d(10)); tail.lineTo(-d(20),-d(2)); tail.lineTo(-d(20),d(2)); tail.lineTo(-d(23),d(10)); tail.lineTo(-d(21),d(10)); tail.lineTo(-d(13),d(3)); tail.close();
+        p.setColor(Color.rgb(90,135,122)); c.drawPath(tail,p);
+        Path body=new Path(); body.moveTo(d(20),0); body.lineTo(d(8),-d(3)); body.lineTo(-d(16),-d(3.5f)); body.lineTo(-d(20),-d(2)); body.lineTo(-d(20),d(2)); body.lineTo(-d(16),d(3.5f)); body.lineTo(d(8),d(3)); body.close();
+        p.setShader(new LinearGradient(-d(20),0,d(20),0,new int[]{Color.rgb(50,80,73),Color.rgb(245,255,250),Color.rgb(105,160,142)},null,Shader.TileMode.CLAMP)); c.drawPath(body,p); p.setShader(null);
+        Path cockpit=new Path(); cockpit.moveTo(d(11),-d(1.5f)); cockpit.lineTo(d(3),-d(2)); cockpit.lineTo(-d(3),-d(1.5f)); cockpit.lineTo(d(1),d(1.5f)); cockpit.close();
+        p.setColor(Color.rgb(20,115,125)); p.setShadowLayer(d(3),0,0,Color.CYAN); c.drawPath(cockpit,p); p.clearShadowLayer();
+        p.setColor(neon); p.setStrokeWidth(d(1)); p.setStyle(Paint.Style.STROKE); c.drawLine(-d(14),0,d(11),0,p); p.setStyle(Paint.Style.FILL);
+        p.setColor(Color.WHITE); c.drawCircle(-d(10),-d(13),d(1.3f),p); c.drawCircle(-d(10),d(13),d(1.3f),p);
         c.restore();
 
         p.setTextAlign(Paint.Align.CENTER); p.setTypeface(android.graphics.Typeface.create("sans-serif-black",1));
