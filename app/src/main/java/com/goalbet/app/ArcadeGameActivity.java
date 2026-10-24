@@ -14,7 +14,7 @@ import java.util.Random;
 public class ArcadeGameActivity extends Activity {
   int bg=Color.rgb(6,10,9), panel=Color.rgb(17,26,23), green=Color.rgb(0,239,129), white=Color.rgb(245,249,247), muted=Color.rgb(145,163,154), red=Color.rgb(255,78,92);
   String game="Crash"; long credits; SharedPreferences prefs; LinearLayout root; TextView balance,status,primary; EditText stakeInput;
-  boolean running=false, crashed=false; double multiplier=1.0, crashAt=2.0; NeonArenaView arenaView; long roundStart; Handler handler=new Handler(); Random random=new Random();
+  boolean running=false, crashed=false; double multiplier=1.0, crashAt=2.0; NeonArenaView arenaView; NeonDiceView diceView; long roundStart; Handler handler=new Handler(); Random random=new Random();
   Runnable tick=new Runnable(){ public void run(){ if(!running)return; double sec=(System.currentTimeMillis()-roundStart)/1000.0; multiplier=Math.exp(sec*0.22); if(multiplier>=crashAt){ multiplier=crashAt; running=false; crashed=true; if(arenaView!=null)arenaView.setState(multiplier,false,true); status.setText("CRASHED  •  ×"+fmt(multiplier)); status.setTextColor(red); primary.setText("PLAY AGAIN"); } else { if(arenaView!=null)arenaView.setState(multiplier,true,false); status.setText("LIVE MULTIPLIER"); primary.setText("CASH OUT  ×"+fmt(multiplier)); handler.postDelayed(this,45); } }};
   String fmt(double v){return String.format(Locale.US,"%.2f",v);}
   GradientDrawable shape(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(radius);return d;}
@@ -42,11 +42,11 @@ public class ArcadeGameActivity extends Activity {
   }
   long stake(){try{return Math.max(0,Long.parseLong(stakeInput.getText().toString().trim()));}catch(Exception e){return 0;}}
   void buildDice(){
-    TextView dice=label("⚄    1 — 6    ⚄",27,green,true);dice.setBackground(shape(panel,dp(18)));LinearLayout.LayoutParams p=lp(-1,150);p.topMargin=dp(14);root.addView(dice,p);
+    diceView=new NeonDiceView(this);LinearLayout.LayoutParams p=lp(-1,174);p.topMargin=dp(14);root.addView(diceView,p);
     TextView result=label("Choose a number, then roll",15,white,true);root.addView(result,lp(-1,54));
     LinearLayout nums=new LinearLayout(this);for(int i=1;i<=6;i++){final int n=i;TextView b=label(""+i,18,green,true);b.setBackground(shape(panel,dp(12)));LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,dp(48),1);q.setMargins(dp(3),0,dp(3),0);nums.addView(b,q);b.setOnClickListener(v->{for(int j=0;j<nums.getChildCount();j++)nums.getChildAt(j).setBackground(shape(panel,dp(12)));b.setBackground(shape(Color.rgb(30,80,56),dp(12)));nums.setTag(n);});}root.addView(nums,lp(-1,54));
     stakeInput=new EditText(this);stakeInput.setSingleLine(true);stakeInput.setInputType(2);stakeInput.setText("100");stakeInput.setTextColor(white);stakeInput.setBackground(shape(panel,dp(12)));root.addView(stakeInput,lp(-1,50));
-    TextView roll=button("ROLL DICE");LinearLayout.LayoutParams rp=lp(-1,54);rp.topMargin=dp(12);root.addView(roll,rp);roll.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;int value=1+random.nextInt(6);int chosen=nums.getTag() instanceof Integer?(Integer)nums.getTag():1;boolean win=value==chosen;if(win)credits+=s*5;save();dice.setText("⚄      "+value+"      ⚄");result.setText(win?"YOU WIN  •  +"+(s*4)+" credits":"NO WIN THIS ROUND");result.setTextColor(win?green:red);});
+    TextView roll=button("ROLL DICE");LinearLayout.LayoutParams rp=lp(-1,54);rp.topMargin=dp(12);root.addView(roll,rp);roll.setOnClickListener(v->{long s=stake();if(s<=0||s>credits){toast("Invalid stake or insufficient credits");return;}credits-=s;int value=1+random.nextInt(6);int chosen=nums.getTag() instanceof Integer?(Integer)nums.getTag():1;boolean win=value==chosen;if(win)credits+=s*5;save();diceView.setFace(value,win);result.setText(win?"YOU WIN  •  +"+(s*4)+" credits":"NO WIN THIS ROUND");result.setTextColor(win?green:red);});
   }
   void buildMines(){
     TextView info=label("Find gems. Avoid the hidden mine.",14,muted,false);root.addView(info,lp(-1,48));
