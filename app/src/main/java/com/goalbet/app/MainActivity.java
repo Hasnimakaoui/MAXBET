@@ -67,9 +67,7 @@ public class MainActivity extends Activity {
             case "Close": return "إغلاق";
             case "League tables are unavailable until a verified sports data provider is connected. No standings are fabricated.": return "ترتيب الدوريات غير متاح حتى ربط مصدر رياضي موثوق. لن نعرض ترتيبًا مختلقًا.";
             case "Real statistics and analysis require verified match data. The current match cards are demo examples, not live fixtures.": return "الإحصائيات والتحليل يحتاجان بيانات مباريات موثوقة. البطاقات الحالية أمثلة تجريبية وليست مباريات مباشرة.";
-            case "Compact layout": return "العرض المضغوط";
             case "Notifications: unavailable": return "التنبيهات: تنتظر ربط البيانات";
-            case "Favorites saved: ": return "المباريات المحفوظة: ";
             case "Theme: Dark neon": return "المظهر: أسود وأخضر نيون";
             case "App: MAXBET demo": return "التطبيق: نسخة MAXBET التجريبية";
             case "Dark neon theme is active": return "المظهر الأسود والأخضر مفعل";
