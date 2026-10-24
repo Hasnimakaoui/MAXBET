@@ -300,14 +300,30 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams nameLp = lp(-1, -2);
                 nameLp.setMargins(0, dp(5), 0, 0);
                 tile.addView(name, nameLp);
-                TextView status = text(arabic ? "قريبًا" : "COMING SOON", 9, green, true);
+                String lower = game.toLowerCase(java.util.Locale.ROOT);
+                boolean playable = lower.equals("crash") || lower.equals("dice") || lower.equals("mines");
+                TextView status = text(playable
+                    ? (arabic ? "قابلة للعب • تجريبي" : "PLAYABLE • DEMO")
+                    : (arabic ? "قيد التطوير" : "IN DEVELOPMENT"), 9, playable ? green : muted, true);
                 LinearLayout.LayoutParams statusLp = lp(-1, -2);
                 statusLp.setMargins(0, dp(4), 0, 0);
                 tile.addView(status, statusLp);
                 tile.setOnClickListener(v -> {
-                    String lower = gameName.toLowerCase(java.util.Locale.ROOT);
-                    String selected = (lower.contains("mine") || lower.contains("gems & mines")) ? "Mines" :
-                        (lower.equals("dice") || lower.contains("five dice") || lower.contains("yahtzee")) ? "Dice" : "Crash";
+                    String chosen = gameName.toLowerCase(java.util.Locale.ROOT);
+                    String selected = null;
+                    if (chosen.equals("crash")) selected = "Crash";
+                    else if (chosen.equals("dice")) selected = "Dice";
+                    else if (chosen.equals("mines")) selected = "Mines";
+                    if (selected == null) {
+                        new AlertDialog.Builder(this)
+                            .setTitle(gameName)
+                            .setMessage(arabic
+                                ? "هذه اللعبة غير مطوّرة بعد. لن نفتح لعبة الطائرة بدلًا منها. الألعاب المتاحة حاليًا للتجربة هي Crash وDice وMines."
+                                : "This game has not been implemented yet. We will not open the plane game as a substitute. Currently playable demos are Crash, Dice, and Mines.")
+                            .setPositiveButton(arabic ? "حسنًا" : "OK", null)
+                            .show();
+                        return;
+                    }
                     android.content.Intent intent = new android.content.Intent(this, ArcadeGameActivity.class);
                     intent.putExtra("game", selected);
                     startActivity(intent);
