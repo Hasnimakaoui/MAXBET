@@ -11,6 +11,9 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.EditText;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.Toast;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
@@ -231,6 +234,105 @@ public class MainActivity extends Activity {
         card.addView(market);
     }
 
+
+    private void addGamesCatalog(LinearLayout root) {
+        sectionTitle(root, "Game library", "1XGAMES STYLE");
+        TextView note = text(arabic
+            ? "مكتبة ألعاب قابلة للبحث — اللعب الفعلي يحتاج مزود ألعاب مرخّص."
+            : "Searchable game catalogue — playable games require a licensed provider.", 11, muted, false);
+        LinearLayout.LayoutParams noteLp = lp(-1, -2);
+        noteLp.setMargins(0, 0, 0, dp(12));
+        root.addView(note, noteLp);
+        EditText search = new EditText(this);
+        search.setSingleLine(true);
+        search.setTextSize(14);
+        search.setTextColor(white);
+        search.setHintTextColor(muted);
+        search.setHint(arabic ? "ابحث عن لعبة..." : "Search games...");
+        search.setPadding(dp(14), dp(10), dp(14), dp(10));
+        search.setBackground(outline(surface2, Color.rgb(47, 69, 58), 14));
+        root.addView(search, lp(-1, 48));
+        String[] games = {
+            "Aviator", "JetX", "Crash", "Crash Point", "Red Rocket Crash", "Zombie Crash", "Air Crash",
+            "Apple Of Fortune", "Plinko", "Dice", "X-Keno", "Keno", "Bingo", "Roulette", "African Roulette",
+            "Blackjack", "Baccarat", "Poker", "Texas Hold'em", "Indian Poker", "Solitaire", "Dominoes",
+            "Andar Bahar", "Red Dog", "Russian Roulette", "Five Dice Poker", "Card War", "Flip Card",
+            "Higher vs Lower", "Fair Higher vs Lower", "Royal Hi-Lo", "Hi-lo Triple Chance", "Heads or Tails",
+            "Thimbles", "Mines", "Gems & Mines", "Gems Bonanza", "Gems Odyssey", "Scratch Card",
+            "Avengers Scratch Card", "Fruit Cocktail", "Fruit Blast", "Wild Fruits", "Lucky Slot", "777",
+            "Starburst", "Book of Ra", "Wild West Gold", "Sugar Cascade", "Pandora's Slots", "Diamond Slots",
+            "Pharaoh's Kingdom", "Dragon's Gold", "Olympus Slot", "Reels of Wealth", "Reels of Gods",
+            "Mayan Tomb", "Treasure Tomb", "Sea Treasures", "Vikings", "Midgard Zombies", "Mafia's Riches",
+            "Killer Clubs", "Steampunk Kingdom", "Eastern Nights", "Royal Feast", "Fortune 18", "Lucky Knight",
+            "Lucky Card", "Money Wheel", "Jackpot Wheel", "Spin and Win", "Jackpot Game", "Star Lotto",
+            "Russian Lotto", "Football Cup", "Penalties", "Goal!", "Derby Racing", "Mundial", "Fishing",
+            "Yahtzee", "Super Mario", "Grand Theft Auto", "Cyber2077", "Battle Royale", "Cases", "Garage",
+            "Muffins", "Circus Poker", "PF Poker Light", "Triple Pocket Holdem Poker", "Guess Which Hand",
+            "Truth or Lie", "OXO", "Western Slot", "Respin Slot", "Swirly Spin", "Fear Or Win",
+            "Wild Heist Showdown", "Wild Heist Ultimate", "Heroes of the Storm 21", "DOTA 21",
+            "Solitaire Battle Arena", "Games Mania"
+        };
+        LinearLayout results = column();
+        LinearLayout.LayoutParams resultsLp = lp(-1, -2);
+        resultsLp.setMargins(0, dp(12), 0, 0);
+        root.addView(results, resultsLp);
+        Runnable render = () -> {
+            results.removeAllViews();
+            String query = search.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+            int count = 0;
+            LinearLayout currentRow = null;
+            for (String game : games) {
+                if (!game.toLowerCase(java.util.Locale.ROOT).contains(query)) continue;
+                if (count % 2 == 0) {
+                    currentRow = row();
+                    LinearLayout.LayoutParams rowLp = lp(-1, -2);
+                    rowLp.setMargins(0, 0, 0, dp(8));
+                    results.addView(currentRow, rowLp);
+                }
+                final String gameName = game;
+                LinearLayout tile = column();
+                tile.setGravity(Gravity.CENTER_VERTICAL);
+                pad(tile, 11, 12, 9, 12);
+                tile.setBackground(outline(surface, Color.rgb(34, 49, 42), 13));
+                tile.addView(text("✦", 17, green, true));
+                TextView name = text(game, 12, white, true);
+                name.setMaxLines(2);
+                LinearLayout.LayoutParams nameLp = lp(-1, -2);
+                nameLp.setMargins(0, dp(5), 0, 0);
+                tile.addView(name, nameLp);
+                TextView status = text(arabic ? "قريبًا" : "COMING SOON", 9, green, true);
+                LinearLayout.LayoutParams statusLp = lp(-1, -2);
+                statusLp.setMargins(0, dp(4), 0, 0);
+                tile.addView(status, statusLp);
+                tile.setOnClickListener(v -> new AlertDialog.Builder(this)
+                    .setTitle(gameName)
+                    .setMessage(arabic
+                        ? "أُضيفت اللعبة إلى فهرس MAXBET. تشغيلها يحتاج اتفاقًا وربطًا تقنيًا مع مزوّد ألعاب مرخّص؛ هذه البطاقة ليست لعبة فعلية."
+                        : "This title is in the MAXBET catalogue. Actual gameplay requires a licensed game provider integration. This card is not a playable game.")
+                    .setPositiveButton(arabic ? "حسنًا" : "OK", null).show());
+                LinearLayout.LayoutParams tileLp = new LinearLayout.LayoutParams(0, dp(108), 1);
+                if (count % 2 == 0) tileLp.setMargins(0, 0, dp(7), 0);
+                else tileLp.setMargins(dp(7), 0, 0, 0);
+                currentRow.addView(tile, tileLp);
+                count++;
+            }
+            if (count == 0) {
+                TextView empty = text(arabic ? "لا توجد ألعاب بهذا الاسم" : "No games found", 13, muted, false);
+                pad(empty, 8, 16, 8, 16);
+                results.addView(empty);
+            }
+            if (count % 2 != 0 && currentRow != null) {
+                currentRow.addView(new View(this), new LinearLayout.LayoutParams(0, dp(108), 1));
+            }
+        };
+        render.run();
+        search.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { render.run(); }
+            @Override public void afterTextChanged(Editable e) {}
+        });
+    }
+
     private void sectionTitle(LinearLayout root, String title, String action) {
         LinearLayout r = row();
         TextView t = text(title, 18, white, true);
@@ -313,6 +415,8 @@ public class MainActivity extends Activity {
         sports.addView(chip("🏒  Hockey", false));
         sportsScroll.addView(sports);
         content.addView(sportsScroll);
+
+        addGamesCatalog(content);
 
         sectionTitle(content, "Top matches", "VIEW ALL  ↗");
         matchesAnchor = content.getChildAt(content.getChildCount() - 1);
